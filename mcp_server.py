@@ -3,7 +3,7 @@ from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("DocumentMCP", log_level="ERROR")
 
-
+# Pretend the 'values' shown are the actual contents of each document (key).
 docs = {
     "deposition.md": "This deposition covers the testimony of Angela Smith, P.E.",
     "report.pdf": "The report details the state of a 20m condenser tower.",
@@ -21,7 +21,6 @@ docs = {
     name="read_doc_contents",
     description="Read the contents of a document and return it as a string."
 )
-
 def read_document(
     doc_id: str = Field(description="Id of the document to read")
 ):
