@@ -21,6 +21,7 @@ class MCPClient:
         self._session: Optional[ClientSession] = None
         self._exit_stack: AsyncExitStack = AsyncExitStack()
 
+
     async def connect(self):
         server_params = StdioServerParameters(
             command=self._command,
@@ -36,6 +37,7 @@ class MCPClient:
         )
         await self._session.initialize()
 
+
     def session(self) -> ClientSession:
         if self._session is None:
             raise ConnectionError(
@@ -43,11 +45,13 @@ class MCPClient:
             )
         return self._session
 
+
     async def list_tools(self) -> list[types.Tool]:
         # Return a list of tools defined by the MCP server
         # "4. MCP Communication: The MCP client sends a ListToolsRequest to the MCP server and receives a ListToolsResult"
         result = await self.session().list_tools() # gets access to session (our MCP server), calls a built-in function to get list of tools
         return result.tools
+
 
     async def call_tool(
         self, tool_name: str, tool_input: dict
@@ -57,12 +61,19 @@ class MCPClient:
         
 
     async def list_prompts(self) -> list[types.Prompt]:
-        # TODO: Return a list of prompts defined by the MCP server
-        return []
+        # Return a list of prompts defined by the MCP server
+        result = await self.session().list_prompts() # calls built-in function that returns all prompts by MCP Server
+        return result.prompts
+
 
     async def get_prompt(self, prompt_name, args: dict[str, str]):
-        # TODO: Get a particular prompt defined by the MCP server
-        return []
+        # Get a particular prompt defined by the MCP server
+        # When you input something like "/format report.pdf", cli_chat.py splits the input into 2 strings: "format" and "report.pdf"
+        # "format" gets passed in as prompt_name, args get passed in as "{"doc_id": "report.pdf"}". 
+        # "format" refers to the name of the format_document() function in mcp_server.py
+        result = await self.session().get_prompt(prompt_name, args)
+        return result.messages
+
 
     async def read_resource(self, uri: str) -> Any:
         # Read a resource, parse the contents and return it
@@ -80,9 +91,11 @@ class MCPClient:
         await self._exit_stack.aclose()
         self._session = None
 
+
     async def __aenter__(self):
         await self.connect()
         return self
+
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.cleanup()
